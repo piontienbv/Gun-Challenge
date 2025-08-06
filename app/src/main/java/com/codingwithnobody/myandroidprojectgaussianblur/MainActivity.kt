@@ -8,6 +8,8 @@ import androidx.core.view.WindowInsetsCompat
 import android.Manifest
 import android.content.ContentValues
 import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.drawable.Drawable
 import android.os.Build
@@ -23,7 +25,9 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.camera.core.Preview
 import androidx.camera.core.CameraSelector
 import android.util.Log
+import android.view.View
 import android.widget.Button
+import android.widget.TextView
 import androidx.appcompat.content.res.AppCompatResources
 import androidx.camera.core.CameraEffect.IMAGE_CAPTURE
 import androidx.camera.core.CameraEffect.PREVIEW
@@ -36,6 +40,7 @@ import androidx.camera.video.QualitySelector
 import androidx.camera.video.VideoRecordEvent
 import androidx.camera.view.PreviewView
 import androidx.core.content.PermissionChecker
+import androidx.media3.common.Effect
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.effect.DrawableOverlay
 import androidx.media3.effect.OverlayEffect
@@ -43,7 +48,10 @@ import androidx.media3.effect.StaticOverlaySettings
 import androidx.media3.effect.TextureOverlay
 import com.google.common.collect.ImmutableList
 import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
+import androidx.core.graphics.createBitmap
+import androidx.media3.effect.BitmapOverlay
 
 @UnstableApi
 class MainActivity : AppCompatActivity() {
@@ -63,7 +71,7 @@ class MainActivity : AppCompatActivity() {
             // Handle Permission granted/rejected
             var permissionGranted = true
             permissions.entries.forEach {
-                if (it.key in REQUIRED_PERMISSIONS && it.value == false)
+                if (it.key in REQUIRED_PERMISSIONS && !it.value)
                     permissionGranted = false
             }
             if (!permissionGranted) {
@@ -206,7 +214,7 @@ class MainActivity : AppCompatActivity() {
             ) {}
 
 
-            val effects = ImmutableList.Builder<androidx.media3.common.Effect>()
+            val effects = ImmutableList.Builder<Effect>()
             val overlay = createOverlayEffectFromBundle()
             overlay?.let { effects.add(it) }
 
@@ -260,34 +268,81 @@ class MainActivity : AppCompatActivity() {
             }.toTypedArray()
     }
 
-    private fun createOverlayEffectFromBundle(): OverlayEffect? {
+    /*private fun createOverlayEffectFromBundle(): OverlayEffect? {
         val overlaysBuilder = ImmutableList.Builder<TextureOverlay>()
 //        //1
         val logoSettings =
             StaticOverlaySettings.Builder() // Place the logo in the bottom left corner of the screen with some padding from the
                 .setRotationDegrees(90f)
-                .setScale(10f,10f)
+                .setScale(5f,5f)
                 // edges.
                 .setOverlayFrameAnchor(0f, 0f) // Top-left
                 .setBackgroundFrameAnchor(0.05f, 0.05f)
                 .build()
         val logo: Drawable = try {
-            AppCompatResources.getDrawable(this,R.mipmap.ic_launcher)!!
+            AppCompatResources.getDrawable(this,R.drawable.ic_hello_summer_2)!!
         } catch (e: PackageManager.NameNotFoundException) {
             throw IllegalStateException(e)
         }
-        logo.setBounds( /* left= */
-            0,  /* top= */0, logo.intrinsicWidth, logo.intrinsicHeight
+        logo.setBounds( *//* left= *//*
+            0,  *//* top= *//*0, logo.intrinsicWidth, logo.intrinsicHeight
         )
         val logoOverlay: TextureOverlay =
             DrawableOverlay.createStaticDrawableOverlay(logo, logoSettings)
-        val timerOverlay: TextureOverlay = TimerOverlay()
-        overlaysBuilder.add(logoOverlay, timerOverlay)
-
-
+       // val timerOverlay: TextureOverlay = TimerOverlay()
+        overlaysBuilder.add(logoOverlay)
 
         val overlays = overlaysBuilder.build()
         return if (overlays.isEmpty()) null else OverlayEffect(overlays)
-    }
+    }*/
+    private fun createOverlayEffectFromBundle(): OverlayEffect? {
+        // 1. Inflate layout XML của bạn thành một đối tượng View
+        // Đảm bảo bạn đã tạo file layout tên là "video_overlay_layout.xml"
+        val overlayView = layoutInflater.inflate(R.layout.template_daily_1, null)
 
+        // 2. Chuyển View thành Bitmap bằng hàm tiện ích
+        val overlayBitmap = createBitmapFromView(overlayView)
+
+        // 3. Sử dụng BitmapOverlay để tạo lớp phủ
+        val overlaySettings =
+            StaticOverlaySettings.Builder()
+                // Xoay 90 độ để khớp với hướng video dọc
+                .setRotationDegrees(90f)
+                // Đặt vị trí của lớp phủ. Ví dụ: đặt ở góc dưới bên trái
+                //.setOverlayFrameAnchor(0f, 0f) // Mỏ neo ở góc dưới-trái của bitmap
+               // .setBackgroundFrameAnchor(0.05f, 0.95f) // Đặt mỏ neo đó ở vị trí 5% từ trái, 95% từ trên
+                .build()
+
+        val bitmapOverlay: TextureOverlay =
+            BitmapOverlay.createStaticBitmapOverlay(overlayBitmap, overlaySettings)
+
+        val overlays = ImmutableList.of(bitmapOverlay)
+        return OverlayEffect(overlays)
+    }
+    private fun createBitmapFromView(view: View): Bitmap {
+        // Cập nhật dữ liệu động cho các TextView
+        val timeTextView = view.findViewById<TextView>(R.id.tvTime)
+        val dateTextView = view.findViewById<TextView>(R.id.tvDate)
+        val sdfTime = SimpleDateFormat("h:mm a", Locale.getDefault())
+        val sdfDate = SimpleDateFormat("EEEE, dd-MMM-yyyy", Locale.getDefault())
+
+        // Bạn có thể cập nhật các view khác ở đây (nhiệt độ, vị trí,...)
+        timeTextView.text = sdfTime.format(Date())
+        dateTextView.text = sdfDate.format(Date())
+
+        // Đo đạc và layout cho View để nó có kích thước thật
+        // Ở đây ta giả định chiều rộng của video là 1080px để đo đạc cho chính xác
+        val widthSpec = View.MeasureSpec.makeMeasureSpec(720, View.MeasureSpec.EXACTLY)
+        val heightSpec = View.MeasureSpec.makeMeasureSpec(0, View.MeasureSpec.UNSPECIFIED)
+        view.measure(widthSpec, heightSpec)
+        val measuredWidth = view.measuredWidth
+        val measuredHeight = view.measuredHeight
+        view.layout(0, 0, measuredWidth, measuredHeight)
+
+        // Tạo Bitmap và vẽ View lên đó
+        val bitmap = createBitmap(measuredWidth, measuredHeight)
+        val canvas = Canvas(bitmap)
+        view.draw(canvas)
+        return bitmap
+    }
 }
