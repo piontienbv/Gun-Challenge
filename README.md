@@ -1,2 +1,2 @@
 # MediaEffectOverlayWithVideo
-Triển khai lưu video với overlay
+Triển khai lưu video với overlay (CameraX + MediaEffect)
