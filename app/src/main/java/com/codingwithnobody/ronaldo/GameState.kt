@@ -14,21 +14,15 @@ package com.codingwithnobody.ronaldo
  * - Gun recoil animation
  * - Visual effects (muzzle flash, explosion, spark)
  */
-
-// ══════════════════════════════════════════════════════════════════
-// GAME OBJECTS
-// ══════════════════════════════════════════════════════════════════
-
 /**
  * Gun với recoil animation
  */
 data class Gun(
-    val x: Float = 0.85f,           // Vị trí X (normalized 0..1) - bên phải màn hình
+    val x: Float = 0.95f,           // Vị trí X (normalized 0..1) - bên phải màn hình
     val y: Float = 0.5f,            // Vị trí Y (normalized 0..1) - di chuyển lên xuống
     val direction: Int = 1,          // 1 = đi xuống, -1 = đi lên
-    val speed: Float = 0.3f,         // Tốc độ di chuyển (units per second)
+    val speed: Float = 0.35f,         // Tốc độ di chuyển (units per second)
 
-    // Recoil animation
     val recoilOffsetX: Float = 0f,   // Offset X khi giật (positive = sang phải)
     val recoilOffsetY: Float = 0f,   // Offset Y khi giật (negative = lên trên)
     val recoilRotation: Float = 0f,  // Rotation khi giật (negative = xoay lên)
@@ -66,13 +60,10 @@ data class Bullet(
     val isActive: Boolean get() = state != BulletState.DESTROYED
 }
 
-/**
- * Target với explosion state
- */
 data class Target(
     val id: String = "monster",
-    val x: Float = 0f,            // Bên trái màn hình, sau barrier
-    val y: Float = 0.5f,             // Vị trí Y của monster
+    val x: Float = 0f,
+    val y: Float = 0.5f,
     val width: Float = 0.3f,
     val height: Float = 0.45f,
 
@@ -103,10 +94,6 @@ data class Gap(
     val startY: Float,
     val endY: Float
 )
-
-// ══════════════════════════════════════════════════════════════════
-// VISUAL EFFECTS
-// ══════════════════════════════════════════════════════════════════
 
 /**
  * Types of visual effects
@@ -155,9 +142,6 @@ data class VisualEffect(
     }
 }
 
-// ══════════════════════════════════════════════════════════════════
-// GAME EVENTS (for recording/replay)
-// ══════════════════════════════════════════════════════════════════
 
 sealed class GameEvent {
     abstract val timestamp: Long
@@ -186,9 +170,6 @@ sealed class GameEvent {
     ) : GameEvent()
 }
 
-// ══════════════════════════════════════════════════════════════════
-// GAME PHASE
-// ══════════════════════════════════════════════════════════════════
 
 enum class GamePhase {
     READY,          // Chờ user bấm Record
@@ -198,9 +179,6 @@ enum class GamePhase {
     EXPORTING       // Đang export video
 }
 
-// ══════════════════════════════════════════════════════════════════
-// MAIN GAME STATE
-// ══════════════════════════════════════════════════════════════════
 
 data class GameState(
     // Thời gian
@@ -238,18 +216,12 @@ data class GameState(
         get() = if (totalShots > 0) hits.toFloat() / totalShots else 0f
 }
 
-// ══════════════════════════════════════════════════════════════════
-// TIMESTAMPED STATE (for replay)
-// ══════════════════════════════════════════════════════════════════
 
 data class TimestampedGameState(
     val timestamp: Long,
     val state: GameState
 )
 
-// ══════════════════════════════════════════════════════════════════
-// GAME REPLAY DATA
-// ══════════════════════════════════════════════════════════════════
 
 data class GameReplayData(
     val events: List<GameEvent>,
