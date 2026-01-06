@@ -1,4 +1,4 @@
-package com.codingwithnobody.myandroidprojectgaussianblur;
+package com.codingwithnobody.ronaldo;
 
 
 import android.graphics.Color;

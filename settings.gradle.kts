@@ -19,5 +19,5 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "MyAndroidProjectGaussianBlur"
+rootProject.name = "Gun Challenge"
 include(":app")
